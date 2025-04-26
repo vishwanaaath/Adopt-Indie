@@ -47,21 +47,22 @@ const MapView = () => {
           setLocation(userLocation);
           setInitialPosition(userLocation);
 
-          const response = await axios
-            .get(`https://adopt-indie.onrender.com/api/dogs/nearby`, {
-              params: {
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-                maxDistance: 100000,
-                type: selectedColor,
-              },
-            })
-            .catch((error) => {
-              console.error("API Error:", error);
-              setError(error.response?.data?.message || "Failed to fetch dogs");
-              setLoadingDogs(false);
-              throw error;
-            });
+         const response = await axios
+           .get(
+`https://adopt-indie.onrender.com/api/dogs/nearby`, {
+             params: {
+               lat: pos.coords.latitude,
+               lng: pos.coords.longitude,
+               maxDistance: 100000,
+               type: selectedColor,
+             },
+           })
+           .catch((error) => {
+             console.error("API Error:", error);
+             setError(error.response?.data?.message || "Failed to fetch dogs");
+             setLoadingDogs(false);
+             throw error;
+           });
 
           const dogsWithCoords = response.data.map((dog) => ({
             ...dog,

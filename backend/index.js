@@ -120,8 +120,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // New route to save dog data
 app.post("/api/dogs", async (req, res) => {
   try {
-    console.log(dogData);
-    
+    log
     const dogData = {
       ...req.body,
       location: {

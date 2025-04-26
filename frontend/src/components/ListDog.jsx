@@ -159,8 +159,6 @@ const ListDog = () => {
         phone,
       };
 
-      console.log(dogData);
-      
       // Send to MongoDB
       const response = await axios.post(
         "https://adopt-indie.onrender.com/api/dogs",
