@@ -131,7 +131,7 @@ const ListDog = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+ 
     if (!validateContactInfo()) return;
 
     try {
@@ -144,6 +144,7 @@ const ListDog = () => {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
+ 
 
       // Create final dog data
       const dogData = {
@@ -158,6 +159,8 @@ const ListDog = () => {
         phone,
       };
 
+      console.log(dogData);
+      
       // Send to MongoDB
       const response = await axios.post(
         "https://adopt-indie.onrender.com/api/dogs",

@@ -10,10 +10,33 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Database connections
 // Connect to MongoDB
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      tls: true, // Add TLS for Atlas connection
+      tlsAllowInvalidCertificates: false,
+    });
+
+    // Verify connection
+    await mongoose.connection.db.admin().ping();
+    console.log("✅ MongoDB connected and responsive");
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Connection failed:", err);
+    process.exit(1);
+  }
+};
+
+startServer();
+   
+
+  
 
 // Connect to Supabase
 const supabase = createClient(
@@ -46,7 +69,18 @@ const dogSchema = new mongoose.Schema({
 dogSchema.index({ location: "2dsphere" });
 const Dog = mongoose.model("Dog", dogSchema);
  
-app.use(cors());
+
+app.use(
+  cors({
+    origin: [
+      "https://adoptindie.onrender.com", // Frontend (no hyphen)
+      "http://localhost:5173", // For local development
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    optionsSuccessStatus: 204,
+  })
+);
 app.use(express.json());
 
 // Existing file upload route
@@ -86,6 +120,8 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 // New route to save dog data
 app.post("/api/dogs", async (req, res) => {
   try {
+    console.log(dogData);
+    
     const dogData = {
       ...req.body,
       location: {
@@ -109,12 +145,19 @@ app.get("/api/dogs/nearby", async (req, res) => {
   try {
     const { lat, lng, maxDistance = 100000, type } = req.query;
 
+    // Validate coordinates
+    if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+      return res.status(400).json({ message: "Invalid coordinates" });
+    }
+
+    const coordinates = [parseFloat(lng), parseFloat(lat)];
+
     const query = {
       location: {
         $near: {
           $geometry: {
             type: "Point",
-            coordinates: [parseFloat(lng), parseFloat(lat)],
+            coordinates: coordinates,
           },
           $maxDistance: parseFloat(maxDistance),
         },
@@ -123,16 +166,35 @@ app.get("/api/dogs/nearby", async (req, res) => {
 
     if (type) query.type = type;
 
-    const dogs = await Dog.find(query);
-    res.json(dogs);
+    console.log("Executing query:", JSON.stringify(query, null, 2));
+
+    const dogs = await Dog.find(query).lean().exec();
+
+    // Add transformation to fix _id and coordinates format
+    const response = dogs.map((dog) => ({
+      ...dog,
+      _id: dog._id.toString(),
+      location: {
+        ...dog.location,
+        coordinates: [dog.location.coordinates[0], dog.location.coordinates[1]],
+      },
+    }));
+
+    res.json(response);
   } catch (error) {
-    console.error("Error fetching dogs:", error);
-    res.status(500).json({ message: "Error fetching nearby dogs" });
+    console.error("Full error details:", {
+      message: error.message,
+      stack: error.stack,
+      query: query, // Make sure to define query in the catch scope
+    });
+    res.status(500).json({
+      message: "Error fetching nearby dogs",
+      error: error.message,
+    });
   }
 });
 
-const PORT = process.env.PORT || 5000;
+ 
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+ 
