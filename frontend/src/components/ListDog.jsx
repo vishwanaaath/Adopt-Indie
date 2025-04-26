@@ -160,7 +160,7 @@ const ListDog = () => {
 
       // Send to MongoDB
       const response = await axios.post(
-        "http://localhost:5000/api/dogs",
+        "https://adopt-indie.onrender.com/api/dogs",
         dogData
       );
 

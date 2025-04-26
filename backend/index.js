@@ -45,7 +45,7 @@ const dogSchema = new mongoose.Schema({
 // Create geospatial index
 dogSchema.index({ location: "2dsphere" });
 const Dog = mongoose.model("Dog", dogSchema);
-
+ 
 app.use(cors());
 app.use(express.json());
 
