@@ -1,0 +1,22 @@
+.hero-section {
+  background-image: url('/images/bg-image.svg');
+  background-size: cover;
+  background-position: center;
+}
+ 
+ 
+@media (max-width: 640px) {
+  .hero-section {
+    background-image: url('/images/m-bg.jpg');
+  }
+  .custom-button {
+  background: rgba(255, 255, 255, 0.1); /* Light transparent background */
+  color: white;
+  backdrop-filter: blur(10px); /* Applies the blur */ 
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Optional: subtle border */
+  padding: 10px 20px; /* Optional: padding */
+  border-radius: 8px; /* Optional: rounded corners */
+  cursor: pointer;
+}
+
+}
